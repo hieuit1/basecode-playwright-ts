@@ -4,9 +4,9 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  schedule: 
+  # schedule: 
     # Tự động chạy Regression test lúc nửa đêm 
-    - cron: "0 17 * * *"
+    # - cron: "0 17 * * *"
   workflow_dispatch:
     inputs:
       environment:
