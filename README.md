@@ -1,11 +1,5 @@
 # 🎭 Playwright TypeScript Automation Testing Boilerplate
 
-[![Playwright](https://img.shields.io/badge/Playwright-v1.61.1-green.svg?logo=playwright&logoColor=white)](https://playwright.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-v5.x-blue.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D_18.x-brightgreen.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
-[![CI Pipeline](https://github.com/your-username/your-repo/actions/workflows/playwright-ci.yml/badge.svg)](https://github.com/your-username/your-repo/actions)
-
 Đây là bộ khung nền tảng (**Boilerplate Framework**) kiểm thử tự động End-to-End (E2E) chuyên nghiệp được xây dựng trên sự kết hợp giữa **Playwright** và **TypeScript**. Framework được thiết kế theo tiêu chuẩn doanh nghiệp, tối ưu cho việc tái sử dụng, khả năng mở rộng dễ dàng, hỗ trợ đa môi trường, tích hợp sẵn CI/CD và cơ chế ngăn chặn Flaky Test thông minh.
 
 ---
