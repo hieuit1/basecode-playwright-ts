@@ -4,6 +4,9 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  schedule: 
+    # Tự động chạy Regression test lúc nửa đêm 
+    - cron: "0 17 * * *"
   workflow_dispatch:
     inputs:
       environment:
@@ -12,11 +15,25 @@ on:
         default: "qa"
         type: choice
         options: [dev, qa, staging]
+      test_type:
+        description: "Chọn bộ Test"
+        required: true
+        default: "@smoke"
+        type: choice
+        options: ["@smoke", "@regression", "@e2e"]
+
+  # Mở cổng nhận tín hiệu từ các Repository khác
+  repository_dispatch:
+    types: [run-staging-tests, run-qa-tests]
 
 jobs:
   execute-tests:
     timeout-minutes: 45
     runs-on: ubuntu-latest
+
+    # BỔ SUNG DÒNG NÀY: Để GitHub biết chui vào Settings -> Environments lấy đúng BASE_URL
+    environment: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -36,8 +53,25 @@ jobs:
 
       - name: Execute Parallel Shard Testing
         env:
-          ENV: ${{ github.event.inputs.environment || 'qa' }}
-        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+          ENV: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}
+          BASE_URL: ${{ vars.BASE_URL }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "🔥 Chạy Smoke Test cho Pull Request..."
+            npx playwright test --grep "@smoke" --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+            
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "👨‍💻 Chạy thủ công bộ ${{ github.event.inputs.test_type }} trên môi trường $ENV..."
+            npx playwright test --grep "${{ github.event.inputs.test_type }}" --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+            
+          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "🚀 Nhận lệnh Deploy từ Dev. Chạy bộ Regression trên môi trường $ENV..."
+            npx playwright test --grep "@regression" --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+            
+          else
+            echo "🕒 Chạy tự động ban đêm (Schedule) bộ Regression..."
+            npx playwright test --grep "@regression" --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+          fi
 
       - name: Preserve Allure Context Results
         if: ${{ !cancelled() }}
@@ -92,8 +126,8 @@ jobs:
       - name: Publish Test Report Link
         if: github.event_name != 'pull_request'
         run: |
-          echo "## 📊 KẾT QUẢ KIỂM THỬ PLAYWRIGHT" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 KẾT QUẢ KIỂM THỬ" >> $GITHUB_STEP_SUMMARY
           echo "| Hạng mục | Thông tin chi tiết |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Môi trường** | \`${{ github.event.inputs.environment || 'qa' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Môi trường** | \`${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Báo cáo Allure** | 👉 **[XEM BÁO CÁO TẠI ĐÂY](https://hieuit1.github.io/basecode-playwright-ts/)** |" >> $GITHUB_STEP_SUMMARY
