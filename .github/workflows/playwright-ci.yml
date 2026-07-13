@@ -28,7 +28,7 @@ on:
 
 jobs:
   execute-tests:
-    timeout-minutes: 45
+    timeout-minutes: 60
     runs-on: ubuntu-latest
 
     # BỔ SUNG DÒNG NÀY: Để GitHub biết chui vào Settings -> Environments lấy đúng BASE_URL
@@ -53,7 +53,7 @@ jobs:
 
       - name: Execute Parallel Shard Testing
         env:
-          ENV: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}
+          ENV: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}
           BASE_URL: ${{ vars.BASE_URL }}
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
@@ -85,7 +85,7 @@ jobs:
     if: ${{ !cancelled() }}
     needs: [execute-tests]
     runs-on: ubuntu-latest
-    
+    environment: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}
     permissions:
       contents: write
       pages: write
@@ -113,7 +113,7 @@ jobs:
           mkdir -p target/allure-results
           cat <<EOF > target/allure-results/environment.properties
           BaseURL=${{ vars.BASE_URL }}
-          Environment=${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}
+          Environment=${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}
           Browser=Chromium
           Project=Base-Playwright-TS
           EOF
@@ -140,7 +140,7 @@ jobs:
           echo "## 📊 KẾT QUẢ KIỂM THỬ" >> $GITHUB_STEP_SUMMARY
           echo "| Hạng mục | Thông tin chi tiết |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Môi trường** | \`${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Môi trường** | \`${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Báo cáo Allure** | 👉 **[XEM BÁO CÁO TẠI ĐÂY](https://hieuit1.github.io/basecode-playwright-ts/)** |" >> $GITHUB_STEP_SUMMARY
           echo "> Lưu ý: Nếu báo cáo chưa hiện ra ngay, hãy đợi 1-2 phút để GitHub Pages cập nhật." >> $GITHUB_STEP_SUMMARY
 
@@ -152,14 +152,14 @@ jobs:
           server_port: 587
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "🚀 Kết quả Test Tự động - Môi trường ${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}"
+          subject: "🚀 Kết quả Test Tự động - Môi trường ${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}"
           body: |
             Xin chào team,
             
             Hệ thống kiểm thử tự động Playwright vừa chạy xong.
             
             📌 THÔNG TIN CHI TIẾT:
-            - Môi trường test: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}
+            - Môi trường test: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}
             - Trạng thái: Hoàn tất
             
             📊 XEM BÁO CÁO TẠI ĐÂY (Allure Dashboard):
