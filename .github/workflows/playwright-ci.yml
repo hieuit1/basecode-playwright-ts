@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # BỔ SUNG DÒNG NÀY: Để GitHub biết chui vào Settings -> Environments lấy đúng BASE_URL
-    environment: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'qa' }}
+    environment: ${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}
 
     strategy:
       fail-fast: false
@@ -85,6 +85,7 @@ jobs:
     if: ${{ !cancelled() }}
     needs: [execute-tests]
     runs-on: ubuntu-latest
+    
     permissions:
       contents: write
       pages: write
