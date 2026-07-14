@@ -93,6 +93,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Ensure gh-pages branch exists
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            echo "Branch gh-pages does not exist. Creating it..."
+            git checkout --orphan gh-pages
+            git reset --hard
+            git commit --allow-empty -m "Initialize gh-pages branch"
+            git push origin gh-pages
+            git checkout -f ${{ github.ref_name }}
+          else
+            echo "Branch gh-pages already exists."
+          fi
+
       - name: Merge Distributed Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -115,7 +130,7 @@ jobs:
           BaseURL=${{ vars.BASE_URL }}
           Environment=${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}
           Browser=Chromium
-          Project=Base-Playwright-TS
+          Project=test-base
           EOF
 
       - name: Generate Allure Report
@@ -141,7 +156,7 @@ jobs:
           echo "| Hạng mục | Thông tin chi tiết |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
           echo "| **Môi trường** | \`${{ github.event.client_payload.environment || github.event.inputs.environment || 'staging' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Báo cáo Allure** | 👉 **[XEM BÁO CÁO TẠI ĐÂY](https://hieuit1.github.io/basecode-playwright-ts/)** |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Báo cáo Allure** | 👉 **[XEM BÁO CÁO TẠI ĐÂY](https://hieuit1.github.io/test-base-code/)** |" >> $GITHUB_STEP_SUMMARY
           echo "> Lưu ý: Nếu click vào link mà vẫn hiện ra báo cáo cũ hoặc chưa hiện ra ngay, hãy đợi 1-2 phút để GitHub Pages cập nhật." >> $GITHUB_STEP_SUMMARY
 
       - name: Send Email with Allure Link
@@ -163,12 +178,12 @@ jobs:
             - Trạng thái: Hoàn tất
             
             XEM BÁO CÁO TẠI ĐÂY (Allure Dashboard):
-            https://hieuit1.github.io/basecode-playwright-ts/
+            https://hieuit1.github.io/test-base-code/
             
             Chi tiết tiến trình trên GitHub Actions:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
             Trân trọng,
             Hệ thống CI/CD Automation Bot
-          to: bentakeu@gmail.com, [EMAIL_ADDRESS]
+          to: bentakeu@gmail.com
           from: CI/CD Bot

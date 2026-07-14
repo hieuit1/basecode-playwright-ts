@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { allure } from "allure-playwright";
+import * as allure from "allure-js-commons";
 
 export async function customStep(
     page: Page,
